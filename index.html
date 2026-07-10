@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EX COMSEC RTS LINK 2026 - Evaluation Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-container { padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+            body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tr { page-break-inside: avoid !important; }
+            @page { size: A4; margin: 1.5cm; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-950 min-h-screen flex flex-col">
+
+    <!-- NAVBAR DENGAN LOGO -->
+    <nav class="bg-slate-900 text-white p-4 shadow-md no-print flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+            <!-- Letakkan fail mkn_logo.png dan logo.png di dalam folder yang sama dengan fail HTML ini -->
+            <img src="mkn_logo.png" alt="MKN Logo" class="h-10 w-auto bg-white p-1 rounded shadow-sm" onerror="this.src='https://placehold.co/100x100/white/black?text=MKN'">
+            <img src="logo.png" alt="RTS Logo" class="h-10 w-auto bg-white p-1 rounded shadow-sm" onerror="this.src='https://placehold.co/100x100/white/black?text=LOGO'">
+            
+            <div class="flex flex-col justify-center ml-2">
+                <span class="bg-blue-600 px-2 py-0.5 rounded text-[10px] font-black tracking-widest w-max">EX COMSEC</span>
+                <h1 class="text-lg font-bold leading-tight mt-0.5">RTS LINK 2026 Portal</h1>
+            </div>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded text-sm font-semibold transition bg-blue-600 text-white">Dashboard</button>
+            <button onclick="switchView('form')" id="nav-form" class="px-4 py-2 rounded text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">Borang Penilaian</button>
+            <button onclick="switchView('reports')" id="nav-reports" class="px-4 py-2 rounded text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white">Laporan Cetak (PDF)</button>
+        </div>
+    </nav>
+
+    <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
+
+        <!-- DASHBOARD SECTION -->
+        <section id="view-dashboard" class="space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-4 border-b pb-4">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-800 uppercase">EX-COMSEC X RTSO 2026 DASHBOARD</h2>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="deleteAllRecords()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-4 py-2 rounded shadow-sm flex items-center space-x-2 transition">
+                        <span>Padam Semua Rekod (Reset)</span>
+                    </button>
+                    <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-bold px-4 py-2 rounded shadow-sm flex items-center space-x-2 transition">
+                        <span>Print Dashboard</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Widgets -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Evaluators Captured</span>
+                    <p id="stat-total" class="text-4xl font-black text-blue-600 mt-1">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">System Average Rating</span>
+                    <p id="stat-avg" class="text-4xl font-black text-emerald-600 mt-1">0.00</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Latest Assessment Action</span>
+                    <p id="stat-latest" class="text-sm font-bold text-slate-700 mt-2 truncate">Tiada Rekod</p>
+                </div>
+            </div>
+
+            <!-- COLLAPSIBLE: MAPS -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-lg space-y-3">
+                <div class="flex flex-wrap justify-between items-center gap-2">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Color-Coded Evaluator Geolocation Mapping</h3>
+                    <div class="flex items-center gap-3">
+                        <div id="map-legend" class="flex flex-wrap gap-2 text-[10px] font-bold"></div>
+                        <button onclick="toggleSection('map-container', 'icon-map')" id="icon-map" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded font-mono text-xs font-bold transition">[-]</button>
+                    </div>
+                </div>
+                <div id="map-container" class="w-full relative z-10 transition-all duration-300">
+                    <div id="map" class="w-full h-[500px] rounded-lg border border-gray-300 shadow-inner"></div>
+                </div>
+            </div>
+
+            <!-- COLLAPSIBLE: INJECTION STATUS -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Indikator Status Pengaktifan Suntikan (Injects)</h3>
+                    <button onclick="toggleSection('suntikan-indicator-container', 'icon-inject')" id="icon-inject" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded font-mono text-xs font-bold transition">[-]</button>
+                </div>
+                <div id="suntikan-indicator-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-all duration-300">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- COLLAPSIBLE: PERFORMANCE STATS -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Performance Average Across Exercise Phases</h3>
+                        <button onclick="toggleSection('phase-chart-container', 'icon-phase')" id="icon-phase" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded font-mono text-xs font-bold transition">[-]</button>
+                    </div>
+                    <div id="phase-chart-container" class="relative h-64 w-full transition-all duration-300">
+                        <canvas id="phaseChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- COLLAPSIBLE: EVALUATION SUBMISSION STATS -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Evaluation Submission Progress by Agency</h3>
+                        <button onclick="toggleSection('agency-chart-container', 'icon-agency')" id="icon-agency" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded font-mono text-xs font-bold transition">[-]</button>
+                    </div>
+                    <div id="agency-chart-container" class="relative h-64 w-full transition-all duration-300">
+                        <canvas id="agencyChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- COLLAPSIBLE: SUBMISSION REGISTRY -->
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs flex flex-col lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Submissions Registry Database Log</h3>
+                        <button onclick="toggleSection('registry-table-container', 'icon-registry')" id="icon-registry" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded font-mono text-xs font-bold transition">[-]</button>
+                    </div>
+                    <div id="registry-table-container" class="overflow-x-auto flex-1 max-h-[16rem] transition-all duration-300">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 uppercase font-bold sticky top-0">
+                                    <th class="p-3 border-b">Nama Penilai</th>
+                                    <th class="p-3 border-b">Agensi</th>
+                                    <th class="p-3 border-b">Koordinat Geolocation</th>
+                                    <th class="p-3 border-b text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registry-rows" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FORM SECTION -->
+        <section id="view-form" class="hidden max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm">
+            
+            <!-- HEADER BORANG DENGAN LOGO -->
+            <div class="flex flex-col md:flex-row items-center justify-between border-b pb-4 mb-6 gap-4">
+                <img src="mkn_logo.png" alt="MKN Logo" class="h-16 w-auto object-contain" onerror="this.src='https://placehold.co/100x100/white/black?text=MKN'">
+                <div class="text-center flex-1">
+                    <h2 class="text-xl md:text-2xl font-black text-slate-900">BORANG PENILAIAN SIMULASI TTX NASIONAL</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Sistem Penilaian Terasing Mengikut Komponen Suntikan</p>
+                </div>
+                <img src="logo.png" alt="Other Logo" class="h-16 w-auto object-contain" onerror="this.src='https://placehold.co/100x100/white/black?text=LOGO'">
+            </div>
+
+            <form id="evaluationForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Agensi / Jabatan</label>
+                        <select id="form-agensi" required onchange="populateEvaluators()" class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Pilih Agensi</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Nama Penilai</label>
+                        <select id="form-nama" required class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Sila pilih agensi terlebih dahulu</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Tarikh</label>
+                            <input type="date" id="form-tarikh" required class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Masa</label>
+                            <input type="time" id="form-masa" required class="mt-1 w-full bg-white border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Geolocation Coords (Auto-Fetched)</label>
+                        <input type="text" id="form-geo" readonly class="mt-1 w-full bg-slate-100 border border-gray-200 text-gray-500 rounded-lg p-2 text-xs font-mono outline-none">
+                    </div>
+                </div>
+
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-4">
+                    <h3 class="text-sm font-bold text-blue-900 uppercase tracking-wider border-b border-blue-200 pb-2">Inisiasi Komponen Penilaian</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-800">Pilih Fasa Semasa</label>
+                            <select id="select-fasa" onchange="updateSuntikanDropdown()" class="mt-1 w-full bg-white border border-blue-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-blue-800">Pilih Suntikan (Inject)</label>
+                            <select id="select-suntikan" onchange="renderQuestions()" class="mt-1 w-full bg-white border border-blue-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">Sila Pilih Fasa Terlebih Dahulu</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 text-[11px] text-amber-900 rounded-lg grid grid-cols-2 sm:grid-cols-6 gap-2 text-center font-medium">
+                    <div>0: Tidak Berkaitan</div>
+                    <div>1: Tidak Dilaksanakan</div>
+                    <div>2: Perlu Penambahbaikan</div>
+                    <div>3: Memuaskan</div>
+                    <div>4: Baik</div>
+                    <div>5: Sangat Baik</div>
+                </div>
+
+                <div id="questions-container" class="space-y-4">
+                    <div class="text-center p-8 text-gray-400 border border-dashed border-gray-300 rounded-xl text-sm">
+                        Sila pilih Fasa dan Suntikan di atas untuk memulakan penilaian.
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-submit-form" disabled class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 font-bold text-sm rounded-xl tracking-wide shadow-xs transition">
+                    Simpan Suntikan Ini Ke Pangkalan Data
+                </button>
+            </form>
+        </section>
+
+        <!-- REPORTS SECTION -->
+        <section id="view-reports" class="hidden">
+            <div class="no-print bg-white p-4 rounded-xl border border-gray-200 flex flex-wrap justify-between items-center gap-4 mb-6 shadow-xs">
+                <div>
+                    <h3 class="font-bold text-slate-800">Cetak Laporan Penilaian Bertulis (PDF)</h3>
+                    <p class="text-xs text-gray-500">Menyokong kompilasi automatik bagi suntikan yang dinilai secara berperingkat.</p>
+                </div>
+                <button onclick="window.print()" id="btnPrintReport" disabled class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300 font-bold text-xs uppercase tracking-wider rounded-lg shadow-xs transition">
+                    Cetak Laporan Rasmi (PDF)
+                </button>
+            </div>
+
+            <div id="printable-report" class="bg-white p-8 md:p-12 border border-gray-200 shadow-sm rounded-xl max-w-4xl mx-auto print-container">
+                <div class="text-center p-12 border border-dashed text-gray-400 rounded-xl" id="report-placeholder">
+                    Sila pilih satu rekod penilai daripada senarai dashboard untuk mencetak fail.
+                </div>
+                <div id="report-content" class="hidden space-y-6">
+                    <!-- Kandungan laporan akan dijana di sini oleh fungsi JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center text-xs p-4 border-t border-slate-800 no-print">
+        &copy; 2026 EX COMSEC RTS LINK System Engine. Pengurusan Keselamatan Terpadu Arahan MKN No. 21.
+    </footer>
+
+    <script>
+        const ADMIN_PASSWORD = "EX-COMSEC-2026";
+
+        const AGENCY_COLORS = {
+            "MOT": "#3B82F6", "PDRM": "#1E3A8A", "ATM": "#15803D", "JPBM": "#DC2626", 
+            "KKM": "#EC4899", "MRTS": "#8B5CF6", "APAD": "#F59E0B", "ATOM": "#06B6D4", 
+            "BPSD MKN": "#111827", "APM JOHOR": "#F97316"
+        };
+
+        const EVALUATORS_REGISTRY = {
+            "MOT": ["ENCIK FOONG HAN YANG"],
+            "PDRM": ["SUPT PETER BIN JOHNNY", "ASP NORSUZILAWATI BIN MOHD NOR"],
+            "ATM": ["MEJ ZULFAZLEE BIN ZAMRI", "MEJ MOHD SHAIZRAL BIN SHUKRI"],
+            "JPBM": ["PKPGB MURTAZA KHATIBIN BIN KAMARUDIN"],
+            "KKM": ["DR ROSVINDER SINGH", "DR JEYANTHINI SATHASIVAM"],
+            "MRTS": ["INS MOHD ROSDI BIN RAZALI"],
+            "APAD": ["ENCIK MD SYAHMI HASIF BIN MUHAMMAD", "ENCIK MUHAMAD SULAIM BIN ABDUL RAHMAN"],
+            "ATOM": ["ENCIK MOHD KHAIRIL FAIZI BIN ISMAIL"],
+            "BPSD MKN": ["DSP MOHD SHUKRI BIN ABDUL RAZAK"],
+            "APM JOHOR": ["KOL (PA) MOHD AZHAR BIN MUJAB"]
+        };
+
+        const EXERCISE_FRAMEWORK = [
+            {
+                phaseTitle: "FASA 1: INSIDEN KETENTERAMAN & KESELAMATAN AWAM (SOP 1)",
+                injects: [
+                    {
+                        injectTitle: "Suntikan 1: Isu Parkir & Kesesakan",
+                        questions: [
+                            { id: "q1", text: "Adakah pemakluman awal mengenai kesesakan dan perhimpunan di luar stesen diterima melalui saluran komunikasi rasmi dengan betul?", type: "text" },
+                            { id: "q2", text: "Adakah masa laporan awal direkod secara tepat dan disahkan segera oleh penerima?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 2: Perhimpunan Agresif (0700-0730 Jam)",
+                        questions: [
+                            { id: "q3", text: "Adakah Primary OCC segera mengarahkan Pegawai Keselamatan OpCo (SO OpCo) ke lokasi platform/pintu laluan yang betul?", type: "text" },
+                            { id: "q4", text: "Adakah koordinasi awal antara pihak keselamatan dalaman dan pasukan operasi stesen berjalan efektif?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 3: Disinformasi & Gangguan Siber",
+                        questions: [
+                            { id: "q5", text: "Adakah Primary OCC segera menyebarkan notifikasi kecemasan kepada Back-up OCC, Station Manager (SM) di BUC, dan MY Operations Centre (Pusat Kawalan Tempat Kejadian)?", type: "text" },
+                            { id: "q6", text: "Adakah pengaktifan PDRM (IPD JBS/PGA) oleh Pusat Kawalan Tempat Kejadian dilakukan dalam tempoh masa munasabah? (Sila nyatakan masa respons pada catatan)", type: "timeMetric" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 4: Konfrontasi Sistem Tiket Sabotaj",
+                        questions: [
+                            { id: "q7", text: "Adakah terdapat risiko komunikasi (risk communication) ke atas orang awam dan pihak berkepentingan apabila berlaku serangan siber?", type: "text" },
+                            { id: "q8", text: "Adakah situasi di stesen digerakkan untuk meredakan panik akibat serangan siber yang menyebabkan system tergendala?", type: "text" }
+                        ]
+                    }
+                ]
+            },
+            {
+                phaseTitle: "FASA 2: PENGESANAN BEG TANPA TUAN & ANCAMAN CBRNE (SOP 2 & 3)",
+                injects: [
+                    {
+                        injectTitle: "Suntikan 5: Penemuan Bagasi Mencurigakan",
+                        questions: [
+                            { id: "q9", text: "Adakah Anggota Stesen (AS) menyalurkan maklumat penemuan objek kepada Primary OCC menggunakan kaedah penilaian yang tepat dan lengkap?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 6: Penilaian Ancaman UPB atau HAZMAT",
+                        questions: [
+                            { id: "q10", text: "Adakah Pengurus Fasiliti / Infraco mengarahkan petugas menyelaraskan crowd control dan kesiapsiagaan ketibaan Unit Pemusnah Bom (UPB) atau HAZMAT?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 7: Petunjuk CBRNE & Notifikasi",
+                        questions: [
+                            { id: "q11", text: "Adakah Primary OCC membuat notifikasi sempadan kepada stesen Woodlands North (WDN) dan ICA IOC di Singapura sebaik sahaja unsur CBRNE dikesan?", type: "text" },
+                            { id: "q12", text: "Adakah eskalasi insiden dilakukan selari dengan tahap keterukan ancaman gas toksik (penglibatan ATOM, KKM, Jabatan Kimia selain JBPM)?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 8: Aktivasi Pasukan HAZMAT & Assembly Point",
+                        questions: [
+                            { id: "q13", text: "Adakah Tempat Berkumpul (Assembly Point) yang bebas daripada radius kontaminasi udara dikenal pasti untuk mangsa?", type: "text" }
+                        ]
+                    }
+                ]
+            },
+            {
+                phaseTitle: "FASA 3: KEBAKARAN TREN DI ATAS LANDASAN / JEJAMBAT (SOP 4)",
+                injects: [
+                    {
+                        injectTitle: "Suntikan 9: Letupan Kimia & Kebakaran Tren",
+                        questions: [
+                            { id: "q14", text: "Adakah penilaian risiko secara menyeluruh dilakukan sebelum melaksanakan arahan sekatan kelajuan sementara atau pemberhentian kecemasan (CESB/Temporary Speed Restriction)?", type: "text" },
+                            { id: "q15", text: "Adakah komunikasi dilakukan secara jelas bersama pengendali kereta api (train operator) sebelum CESB diaktifkan?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 10: Kegagalan Pintu & Proses Evakuasi",
+                        questions: [
+                            { id: "q16", text: "Sejauhmana kecekapan agensi dalam mengendalikan dan mengenalpasti mangsa akibat ancaman CBRNE bagi tujuan evakuasi?", type: "text" },
+                            { id: "q17", text: "Adakah keputusan dan kaedah evakuasi penumpang dari kereta api (detrainment) mematuhi protokol dan justifikasi keselamatan tertinggi?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 11: Penumpang Terjun Ke Jejambat & Ancaman Elektrik",
+                        questions: [
+                            { id: "q18", text: "Bagaimanakah koordinasi segera bersama Pasukan Polis Marin dan Jabatan Laut Malaysia memandangkan kedudukan mangsa jatuh di struktur jejambat Selat Johor?", type: "text" },
+                            { id: "q19", text: "Adakah pengesahan status bahaya (residual current) pada logam trek disebarkan kepada semua pasukan pasukan penyelamat sebelum merawat mangsa patah kaki?", type: "text" }
+                        ]
+                    }
+                ]
+            },
+            {
+                phaseTitle: "FASA 4: KECEMASAN PERUBATAN & IMPAK MANGSA RAMAI / MCI (SOP 5)",
+                injects: [
+                    {
+                        injectTitle: "Suntikan 12: Kegagalan Sistem Traksi & Pengaktifan MCI",
+                        questions: [
+                            { id: "q20", text: "Adakah pengaktifan prosedur Mass Casualty Incident (MCI) dan kaedah pengelasan tahap kritikal mangsa (triage) digerakkan dengan lancar?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 13: Lonjakan Mangsa (>50 Kes) & Penyerahan Kuasa",
+                        questions: [
+                            { id: "q21", text: "Adakah penyerahan kuasa arahan (command transfer) daripada Incident Manager (IM) industri kepada pihak PDRM selaku Komander Operasi Bencana diumumkan secara formal?", type: "text" }
+                        ]
+                    },
+                    {
+                        injectTitle: "Suntikan 14: Kekangan Logistik Peralatan",
+                        questions: [
+                            { id: "q22", text: "Adakah peranan agensi sokongan (NADMA, APM, JKM, Pejabat Daerah) dikoordinasikan dengan jelas bagi menangani isu kekangan logistik peralatan (stretcher/ubat-ubatan)?", type: "text" }
+                        ]
+                    }
+                ]
+            },
+            {
+                phaseTitle: "FASA 5: ADVISORI PEMULIHAN & PENGOPERASIAN SEMULA PERKHIDMATAN",
+                injects: [
+                    {
+                        injectTitle: "Suntikan 15: Penamatan Kecemasan Pasca-Insiden",
+                        questions: [
+                            { id: "q23", text: "Adakah PDRM memberikan nasihat keselamatan (advisory) pemulihan perkhidmatan kepada MY Operations Centre berdasarkan bukti fizikal yang sahih di lapangan?", type: "text" },
+                            { id: "q24", text: "Adakah penilaian semula risiko (risk reassessment) diselesaikan secara mutlak sebelum sekatan ditarik balik?", type: "text" },
+                            { id: "q25", text: "Adakah integriti sistem landasan dan isyarat diverifikasi terlebih dahulu sebelum tren awam dibenarkan beroperasi semula?", type: "text" },
+                            { id: "q26", text: "Adakah strategi pengurusan media (media handling) pasca-bencana dilaksanakan secara efektif bagi menghentikan impak disinformasi?", type: "text" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        let database = JSON.parse(localStorage.getItem('ttx_eval_db')) || [];
+        let phaseChartInstance = null, agencyChartInstance = null, mapInstance = null, markersGroup = null;
+
+        function switchView(target) {
+            ['dashboard', 'form', 'reports'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                document.getElementById(`nav-${v}`).className = "px-4 py-2 rounded text-sm font-semibold transition text-slate-300 hover:bg-slate-800 hover:text-white";
+            });
+            document.getElementById(`view-${target}`).classList.remove('hidden');
+            document.getElementById(`nav-${target}`).className = "px-4 py-2 rounded text-sm font-semibold transition bg-blue-600 text-white";
+            
+            if (target === 'dashboard') {
+                updateDashboardMetrics();
+                setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 200);
+            }
+        }
+
+        function toggleSection(sectionId, iconId) {
+            const section = document.getElementById(sectionId);
+            const icon = document.getElementById(iconId);
+            section.classList.toggle('hidden');
+            icon.innerText = section.classList.contains('hidden') ? "[+]" : "[-]";
+            
+            if(sectionId === 'map-container' && !section.classList.contains('hidden') && mapInstance) {
+                setTimeout(() => { mapInstance.invalidateSize(); }, 100);
+            }
+        }
+
+        function deleteAllRecords() {
+            const pwd = prompt("Sila masukkan kata laluan untuk memadam SEMUA rekod:");
+            if (pwd === ADMIN_PASSWORD) {
+                if (confirm("AMARAN KESELAMATAN: Adakah anda pasti mahu memadam kesemua rekod penilaian di dalam pangkalan data secara kekal?")) {
+                    database = [];
+                    localStorage.removeItem('ttx_eval_db');
+                    updateDashboardMetrics();
+                    alert("Kesemua rekod telah berjaya dipadamkan.");
+                }
+            } else if (pwd !== null) {
+                alert("Kata laluan salah. Akses ditolak.");
+            }
+        }
+
+        function deleteSingleRecord(id) {
+            const pwd = prompt("Sila masukkan kata laluan untuk memadam rekod penilai ini:");
+            if (pwd === ADMIN_PASSWORD) {
+                if (confirm("Adakah anda pasti mahu memadam rekod ini secara kekal?")) {
+                    database = database.filter(item => item.id !== id);
+                    localStorage.setItem('ttx_eval_db', JSON.stringify(database));
+                    updateDashboardMetrics();
+                    alert("Rekod telah berjaya dipadamkan.");
+                }
+            } else if (pwd !== null) {
+                alert("Kata laluan salah. Akses ditolak.");
+            }
+        }
+
+        function setupDropdowns() {
+            const agensiSelect = document.getElementById('form-agensi');
+            agensiSelect.innerHTML = '<option value="">Pilih Agensi</option>';
+            Object.keys(EVALUATORS_REGISTRY).forEach(agency => {
+                agensiSelect.innerHTML += `<option value="${agency}">${agency}</option>`;
+            });
+
+            const fasaSelect = document.getElementById('select-fasa');
+            fasaSelect.innerHTML = '<option value="">-- Sila Pilih Fasa --</option>';
+            EXERCISE_FRAMEWORK.forEach((fasa, idx) => {
+                fasaSelect.innerHTML += `<option value="${idx}">${fasa.phaseTitle}</option>`;
+            });
+        }
+
+        function populateEvaluators() {
+            const agencySelected = document.getElementById('form-agensi').value;
+            const namaSelect = document.getElementById('form-nama');
+            namaSelect.innerHTML = '<option value="">Pilih Nama Penilai</option>';
+            if (agencySelected && EVALUATORS_REGISTRY[agencySelected]) {
+                EVALUATORS_REGISTRY[agencySelected].forEach(name => namaSelect.innerHTML += `<option value="${name}">${name}</option>`);
+            } else {
+                namaSelect.innerHTML = '<option value="">Sila pilih agensi terlebih dahulu</option>';
+            }
+        }
+
+        function updateSuntikanDropdown() {
+            const fasaIdx = document.getElementById('select-fasa').value;
+            const suntikanSel = document.getElementById('select-suntikan');
+            suntikanSel.innerHTML = '<option value="">-- Sila Pilih Suntikan --</option>';
+            
+            if (fasaIdx !== "") {
+                EXERCISE_FRAMEWORK[fasaIdx].injects.forEach((inj, idx) => {
+                    suntikanSel.innerHTML += `<option value="${idx}">${inj.injectTitle}</option>`;
+                });
+            }
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const fasaIdx = document.getElementById('select-fasa').value;
+            const suntikanIdx = document.getElementById('select-suntikan').value;
+            const container = document.getElementById('questions-container');
+            const submitBtn = document.getElementById('btn-submit-form');
+
+            container.innerHTML = '';
+            
+            if (fasaIdx === "" || suntikanIdx === "") {
+                container.innerHTML = `<div class="text-center p-8 text-gray-400 border border-dashed border-gray-300 rounded-xl text-sm">Sila pilih Fasa dan Suntikan di atas untuk memulakan penilaian.</div>`;
+                submitBtn.setAttribute('disabled', 'true');
+                return;
+            }
+
+            submitBtn.removeAttribute('disabled');
+            const injectData = EXERCISE_FRAMEWORK[fasaIdx].injects[suntikanIdx];
+
+            const block = document.createElement('div');
+            block.className = "space-y-4 border border-blue-100 bg-white p-4 rounded-xl shadow-sm";
+            block.innerHTML = `<h4 class="text-xs font-bold text-blue-800 bg-blue-50 p-2 rounded border border-blue-100">💉 Mengisi Markah: ${injectData.injectTitle}</h4>`;
+
+            injectData.questions.forEach((q) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "pt-2 border-t border-gray-100 mt-2 space-y-3";
+                qDiv.innerHTML = `<p class="text-sm font-semibold text-slate-800">${q.text}</p>`;
+
+                const optRow = document.createElement('div');
+                optRow.className = "flex flex-col md:flex-row md:items-end justify-between gap-4";
+
+                const scoresGroup = document.createElement('div');
+                scoresGroup.className = "space-y-1.5";
+                scoresGroup.innerHTML = `<span class="block text-[10px] uppercase font-bold text-gray-400">Skala Nilai:</span>`;
+                const scoresDiv = document.createElement('div');
+                scoresDiv.className = "flex space-x-1.5";
+                for (let i = 0; i <= 5; i++) {
+                    scoresDiv.innerHTML += `
+                        <label class="flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 font-bold text-xs cursor-pointer hover:bg-slate-100 transition">
+                            <input type="radio" name="${q.id}" value="${i}" required class="sr-only" onclick="highlightRadio(this)">
+                            <span>${i}</span>
+                        </label>`;
+                }
+                scoresGroup.appendChild(scoresDiv);
+                
+                const commentGroup = document.createElement('div');
+                commentGroup.className = "flex-1 w-full space-y-1.5";
+                commentGroup.innerHTML = `<span class="block text-[10px] uppercase font-bold text-gray-400">Catatan / Justifikasi:</span>`;
+                const commentInput = document.createElement('textarea');
+                commentInput.id = `note-${q.id}`;
+                commentInput.rows = 2;
+                commentInput.placeholder = q.type === 'timeMetric' ? "Sila nyatakan masa respons..." : "Catatan / Justifikasi...";
+                commentInput.className = "w-full p-2 text-xs border border-gray-300 rounded-lg bg-gray-50/50 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-y min-h-[45px]";
+                
+                commentGroup.appendChild(commentInput);
+                optRow.appendChild(scoresGroup);
+                optRow.appendChild(commentGroup);
+                qDiv.appendChild(optRow);
+                block.appendChild(qDiv);
+            });
+            container.appendChild(block);
+        }
+
+        function highlightRadio(element) {
+            const parent = element.closest('.flex');
+            parent.querySelectorAll('label').forEach(lbl => lbl.className = "flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 font-bold text-xs cursor-pointer hover:bg-slate-100 transition");
+            element.parentElement.className = "flex items-center justify-center w-8 h-8 rounded-full border border-blue-600 bg-blue-600 text-white font-bold text-xs cursor-pointer";
+        }
+
+        function createCustomMarkerIcon(color) {
+            const svgTemplate = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="32" height="32">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>`;
+            return L.divIcon({ html: svgTemplate, className: 'custom-leaflet-marker', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+        }
+
+        function setupMapModule() {
+            mapInstance = L.map('map').setView([1.4927, 103.7414], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: 'OSM' }).addTo(mapInstance);
+            markersGroup = L.layerGroup().addTo(mapInstance);
+
+            const legendDiv = document.getElementById('map-legend');
+            legendDiv.innerHTML = '';
+            Object.keys(AGENCY_COLORS).forEach(agency => {
+                legendDiv.innerHTML += `
+                    <div class="flex items-center space-x-1">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${AGENCY_COLORS[agency]}"></span>
+                        <span class="text-slate-600 text-[11px]">${agency}</span>
+                    </div>`;
+            });
+        }
+
+        function initGeolocationAndMeta() {
+            const now = new Date();
+            document.getElementById('form-tarikh').value = now.toISOString().split('T')[0];
+            document.getElementById('form-masa').value = now.toTimeString().split(' ')[0].substring(0, 5);
+            
+            const geoField = document.getElementById('form-geo');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => geoField.value = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`,
+                    err => {
+                        const mockLat = (1.47 + Math.random() * 0.04).toFixed(5);
+                        const mockLng = (103.73 + Math.random() * 0.04).toFixed(5);
+                        geoField.value = `${mockLat}, ${mockLng}`;
+                    }
+                );
+            }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const evaluatorName = document.getElementById('form-nama').value;
+            const agencyName = document.getElementById('form-agensi').value;
+            
+            const newScores = {};
+            const newNotes = {};
+            const activeRadios = document.querySelectorAll('#questions-container input[type="radio"]:checked');
+            activeRadios.forEach(r => {
+                newScores[r.name] = parseInt(r.value);
+                newNotes[r.name] = document.getElementById(`note-${r.name}`).value;
+            });
+
+            const existingIdx = database.findIndex(r => r.evaluator.nama === evaluatorName && r.evaluator.agensi === agencyName);
+
+            if (existingIdx > -1) {
+                database[existingIdx].scores = { ...database[existingIdx].scores, ...newScores };
+                database[existingIdx].notes = { ...database[existingIdx].notes, ...newNotes };
+                database[existingIdx].evaluator.tarikh = document.getElementById('form-tarikh').value;
+                database[existingIdx].evaluator.masa = document.getElementById('form-masa').value;
+                alert("Data suntikan telah berjaya digabungkan ke profil penilai ini.");
+            } else {
+                const record = {
+                    id: "TX-" + Date.now(),
+                    evaluator: {
+                        nama: evaluatorName, agensi: agencyName,
+                        tarikh: document.getElementById('form-tarikh').value,
+                        masa: document.getElementById('form-masa').value,
+                        geo: document.getElementById('form-geo').value
+                    },
+                    scores: newScores,
+                    notes: newNotes
+                };
+                database.push(record);
+                alert("Rekod penilai baru dicipta dan data suntikan disimpan.");
+            }
+
+            localStorage.setItem('ttx_eval_db', JSON.stringify(database));
+            document.getElementById('evaluationForm').reset();
+            document.getElementById('select-fasa').value = "";
+            updateSuntikanDropdown(); 
+            initGeolocationAndMeta();
+            switchView('dashboard');
+        }
+
+        function updateDashboardMetrics() {
+            document.getElementById('stat-total').innerText = database.length;
+            markersGroup.clearLayers();
+
+            let absoluteTotal = 0, totalQuestionsCount = 0;
+            let phaseData = { "FASA 1": { sum: 0, count: 0 }, "FASA 2": { sum: 0, count: 0 }, "FASA 3": { sum: 0, count: 0 }, "FASA 4": { sum: 0, count: 0 }, "FASA 5": { sum: 0, count: 0 } };
+            let agencyRegistryData = {};
+            Object.keys(EVALUATORS_REGISTRY).forEach(k => agencyRegistryData[k] = 0);
+
+            const indicatorContainer = document.getElementById('suntikan-indicator-container');
+            indicatorContainer.innerHTML = '';
+
+            EXERCISE_FRAMEWORK.forEach((fasa, fIdx) => {
+                let fasaHtml = `<div class="border border-gray-200 rounded-lg p-3 bg-slate-50"><h4 class="text-[11px] font-black text-slate-800 mb-2 truncate" title="${fasa.phaseTitle}">${fasa.phaseTitle}</h4><div class="space-y-1.5">`;
+                fasa.injects.forEach((inj) => {
+                    let submittedUsersCount = 0;
+                    const injectQIds = inj.questions.map(q => q.id);
+                    
+                    database.forEach(rec => {
+                        const hasAnswered = injectQIds.some(qId => rec.scores.hasOwnProperty(qId));
+                        if (hasAnswered) submittedUsersCount++;
+                    });
+
+                    const statusClass = submittedUsersCount > 0 ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-gray-500 border-gray-200';
+                    const statusDot = submittedUsersCount > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1"></span>Aktif (${submittedUsersCount} Pengguna)` : `<span class="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block mr-1"></span>Kekosongan`;
+
+                    fasaHtml += `
+                        <div class="flex justify-between items-center text-[9px] p-1.5 border rounded ${statusClass}">
+                            <span class="font-bold truncate w-2/3" title="${inj.injectTitle}">${inj.injectTitle}</span>
+                            <span class="font-bold whitespace-nowrap ml-2">${statusDot}</span>
+                        </div>`;
+                });
+                fasaHtml += `</div></div>`;
+                indicatorContainer.innerHTML += fasaHtml;
+            });
+
+            database.forEach(rec => {
+                const agency = rec.evaluator.agensi || "UNKNOWN";
+                if(agencyRegistryData[agency] !== undefined) agencyRegistryData[agency]++;
+                else agencyRegistryData[agency] = 1;
+
+                if(rec.evaluator.geo) {
+                    const coords = rec.evaluator.geo.split(',');
+                    if (coords.length === 2 && !isNaN(coords[0])) {
+                        const markerColor = AGENCY_COLORS[agency] || "#64748B";
+                        L.marker([parseFloat(coords[0]), parseFloat(coords[1])], { icon: createCustomMarkerIcon(markerColor) })
+                         .addTo(markersGroup).bindPopup(`<b>${rec.evaluator.nama}</b><br>Agensi: ${agency}`);
+                    }
+                }
+
+                Object.keys(rec.scores).forEach(qId => {
+                    const score = rec.scores[qId];
+                    if (score !== undefined) {
+                        absoluteTotal += score;
+                        totalQuestionsCount++;
+                        let matchedPhase = "FASA 1";
+                        if(qId.match(/^(q9|q10|q11|q12|q13)$/)) matchedPhase = "FASA 2";
+                        else if(qId.match(/^(q14|q15|q16|q17|q18|q19)$/)) matchedPhase = "FASA 3";
+                        else if(qId.match(/^(q20|q21|q22)$/)) matchedPhase = "FASA 4";
+                        else if(qId.match(/^(q23|q24|q25|q26)$/)) matchedPhase = "FASA 5";
+
+                        phaseData[matchedPhase].sum += score;
+                        phaseData[matchedPhase].count++;
+                    }
+                });
+            });
+
+            document.getElementById('stat-avg').innerText = totalQuestionsCount > 0 ? (absoluteTotal / totalQuestionsCount).toFixed(2) : "0.00";
+            const latestLog = database[database.length - 1];
+            document.getElementById('stat-latest').innerText = latestLog ? `${latestLog.evaluator.nama} (${latestLog.evaluator.agensi})` : "Tiada Rekod Penilaian";
+
+            const rowContainer = document.getElementById('registry-rows');
+            rowContainer.innerHTML = '';
+            database.forEach(rec => {
+                rowContainer.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-800">${rec.evaluator.nama}</td>
+                        <td class="p-3 text-slate-500">${rec.evaluator.agensi}</td>
+                        <td class="p-3 text-xs font-mono text-gray-600">${rec.evaluator.geo}</td>
+                        <td class="p-3 text-center space-x-3">
+                            <button onclick="loadReport('${rec.id}')" class="text-blue-600 font-bold hover:underline">Papar Fail Induk</button>
+                            <button onclick="deleteSingleRecord('${rec.id}')" class="text-red-600 font-bold hover:underline">Padam</button>
+                        </td>
+                    </tr>`;
+            });
+
+            const phaseLabels = Object.keys(phaseData);
+            const phaseAverages = phaseLabels.map(k => phaseData[k].count > 0 ? (phaseData[k].sum / phaseData[k].count).toFixed(2) : 0);
+            if (phaseChartInstance) phaseChartInstance.destroy();
+            phaseChartInstance = new Chart(document.getElementById('phaseChart'), {
+                type: 'bar',
+                data: { labels: phaseLabels, datasets: [{ label: 'Purata Skor Skala', data: phaseAverages, backgroundColor: 'rgba(51, 65, 85, 0.8)', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 5 } } }
+            });
+
+            const agencyLabels = Object.keys(agencyRegistryData);
+            const agencyCounts = Object.values(agencyRegistryData);
+            if (agencyChartInstance) agencyChartInstance.destroy();
+            agencyChartInstance = new Chart(document.getElementById('agencyChart'), {
+                type: 'bar',
+                data: { labels: agencyLabels, datasets: [{ label: 'Borang Dihantar', data: agencyCounts, backgroundColor: agencyLabels.map(lbl => AGENCY_COLORS[lbl] || "#64748B"), borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+
+        function loadReport(id) {
+            const rec = database.find(item => item.id === id);
+            if (!rec) return;
+
+            document.getElementById('report-placeholder').classList.add('hidden');
+            const target = document.getElementById('report-content');
+            target.classList.remove('hidden');
+            document.getElementById('btnPrintReport').removeAttribute('disabled');
+
+            let reportHtml = `
+                <div class="flex items-center justify-between border-b-4 border-slate-900 pb-4 mb-4">
+                    <img src="mkn_logo.png" alt="MKN Logo" style="height: 70px; width: auto; object-fit: contain;" onerror="this.style.display='none'">
+                    <div class="text-center flex-1 px-4">
+                        <h2 class="text-xl font-black text-slate-900 uppercase">Laporan Penilaian Rasmi Keseluruhan</h2>
+                        <h3 class="text-sm font-bold text-slate-700 uppercase">Simulasi TTX Nasional EX COMSEC RTS LINK TAHUN 2026</h3>
+                    </div>
+                    <img src="logo.png" alt="Logo Jabatan" style="height: 70px; width: auto; object-fit: contain;" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 border text-xs font-mono rounded-xl">
+                    <div><strong>NAMA PENILAI:</strong> ${rec.evaluator.nama}</div>
+                    <div><strong>AGENSI / JABATAN:</strong> ${rec.evaluator.agensi}</div>
+                    <div><strong>TARIKH SIMULASI:</strong> ${rec.evaluator.tarikh}</div>
+                    <div><strong>MASA REKODED:</strong> ${rec.evaluator.masa}</div>
+                    <div class="col-span-2"><strong>GEOLOCATION GRID REF:</strong> ${rec.evaluator.geo}</div>
+                </div>`;
+
+            EXERCISE_FRAMEWORK.forEach(phase => {
+                reportHtml += `<div class="mt-4"><h4 class="bg-slate-800 text-white text-xs p-2 font-bold rounded">${phase.phaseTitle}</h4>`;
+                phase.injects.forEach(inj => {
+                    reportHtml += `<h5 class="text-xs font-bold text-blue-800 bg-blue-50 p-1.5 mt-2 rounded border border-blue-100">💉 ${inj.injectTitle}</h5><div class="space-y-2 mt-1">`;
+                    inj.questions.forEach(q => {
+                        const hasScore = rec.scores.hasOwnProperty(q.id);
+                        const scorePrint = hasScore ? rec.scores[q.id] : '<span class="text-[9px] text-gray-400">Belum Dinilai</span>';
+                        const badgeStyle = hasScore ? 'font-black text-sm bg-slate-100 border border-slate-200' : 'bg-white border border-dashed border-gray-300';
+                        const notePrint = hasScore && rec.notes[q.id] ? `<span class="block italic text-blue-700 mt-0.5 whitespace-pre-wrap">Catatan: ${rec.notes[q.id]}</span>` : '';
+
+                        reportHtml += `
+                            <div class="p-2 border-b border-gray-100 flex justify-between items-start text-xs">
+                                <p class="flex-1 font-medium ${hasScore ? 'text-slate-800' : 'text-gray-400'}">${q.text} ${notePrint}</p>
+                                <div class="${badgeStyle} px-3 py-1 rounded ml-4 text-center min-w-[50px]">${scorePrint}</div>
+                            </div>`;
+                    });
+                    reportHtml += `</div>`;
+                });
+                reportHtml += `</div>`;
+            });
+
+            target.innerHTML = reportHtml;
+            switchView('reports');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setupDropdowns();
+            setupMapModule();
+            initGeolocationAndMeta();
+            updateDashboardMetrics();
+        });
+    </script>
+</body>
+</html>
