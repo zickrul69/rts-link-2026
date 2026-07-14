@@ -266,23 +266,23 @@
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Agensi / Jabatan</label>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Agensi / Jabatan  :</label>
                         <select id="form-agensi" onchange="populateEvaluators()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"><option value="">-- Pilih --</option></select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">ID Penilai</label>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">ID Penilai  :</label>
                         <select id="form-nama" onchange="renderQuestions()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"><option value="">Sila pilih agensi</option></select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Koordinat Pintasan (GPS)</label>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Koordinat Pintasan (GPS)  :</label>
                         <input type="text" id="form-geo" readonly class="w-full border border-slate-200 text-slate-500 rounded-lg p-2.5 text-sm font-mono bg-slate-100 outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Tarikh Semasa</label>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Tarikh Semasa  :</label>
                         <input type="text" id="form-date" readonly class="w-full border border-slate-200 text-slate-500 rounded-lg p-2.5 text-sm font-mono bg-slate-100 outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Masa Semasa</label>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Masa Semasa  :</label>
                         <input type="text" id="form-time" readonly class="w-full border border-slate-200 text-slate-500 rounded-lg p-2.5 text-sm font-mono bg-slate-100 outline-none">
                     </div>
                 </div>
@@ -1321,14 +1321,14 @@
                 </div>
                 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4 bg-slate-50 p-6 border border-slate-200 text-xs font-mono rounded-xl mb-8">
-                    <div><span class="text-slate-400 font-bold block mb-1">ID PENILAI</span><span class="text-sm font-black text-slate-800">${evaluatorName}</span></div>
-                    <div><span class="text-slate-400 font-bold block mb-1">AGENSI / JABATAN</span><span class="text-sm font-black text-slate-800">${agency}</span></div>
-                    <div><span class="text-slate-400 font-bold block mb-1">JUMLAH SUNTIKAN</span><span class="text-slate-700 font-bold">${userRecords.length} Suntikan Selesai</span></div>
-                    <div><span class="text-slate-400 font-bold block mb-1">MASA MULA (AWAL)</span><span class="text-slate-700">${getTimestampString(earliestStart)}</span></div>
-                    <div><span class="text-slate-400 font-bold block mb-1">MASA TAMAT (AKHIR)</span><span class="text-slate-700">${getTimestampString(latestEnd)}</span></div>
-                    <div><span class="text-slate-400 font-bold block mb-1">TOTAL DURASI AKTIF</span><span class="text-sm font-black text-slate-700">${formatDuration(overallDuration)}</span></div>
+                    <div><span class="text-slate-400 font-bold block mb-1">ID PENILAI :</span><span class="text-sm font-black text-slate-800">${evaluatorName}</span></div>
+                    <div><span class="text-slate-400 font-bold block mb-1">AGENSI / JABATAN  :</span><span class="text-sm font-black text-slate-800">${agency}</span></div>
+                    <div><span class="text-slate-400 font-bold block mb-1">JUMLAH SUNTIKAN  :</span><span class="text-slate-700 font-bold">${userRecords.length} Suntikan Selesai</span></div>
+                    <div><span class="text-slate-400 font-bold block mb-1">MASA MULA (AWAL)  :</span><span class="text-slate-700">${getTimestampString(earliestStart)}</span></div>
+                    <div><span class="text-slate-400 font-bold block mb-1">MASA TAMAT (AKHIR)  :</span><span class="text-slate-700">${getTimestampString(latestEnd)}</span></div>
+                    <div><span class="text-slate-400 font-bold block mb-1">TOTAL DURASI AKTIF  :</span><span class="text-sm font-black text-slate-700">${formatDuration(overallDuration)}</span></div>
                     <div class="col-span-2 md:col-span-3 pt-3 mt-1 border-t border-slate-200">
-                        <span class="text-slate-400 font-bold block mb-1">SKOR KESELURUHAN (KUMULATIF)</span>
+                        <span class="text-slate-400 font-bold block mb-1">SKOR KESELURUHAN (KUMULATIF)  :</span>
                         <span class="text-lg font-black text-blue-600">${overallTotalScore}</span>
                     </div>
                 </div>`;
