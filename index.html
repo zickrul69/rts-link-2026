@@ -233,7 +233,7 @@
                     <div id="card-timeline" class="eoc-card flex flex-col overflow-hidden h-full shadow-md min-h-[600px]">
                         <div class="bg-slate-900 text-white p-3 border-b border-slate-700 flex justify-between items-center">
                             <h3 class="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                               <svg class="w-4 h-4 text-amber-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Live Timeline
                             </h3>
                             <div class="flex space-x-1">
@@ -997,7 +997,8 @@
             const latestRecords = [...database].sort((a, b) => b.submissionTimestamp - a.submissionTimestamp).slice(0, 15);
             latestRecords.forEach(rec => {
                 const timeStr = getTimestampString(rec.submissionTimestamp).split(' ')[0];
-                const bgDot = rec.status === 'RUNNING' ? 'bg-amber-500' : 'bg-emerald-500';
+                //const bgDot = rec.status === 'RUNNING' ? 'bg-amber-500' : 'bg-emerald-500';
+                const bgDot = rec.status === 'RUNNING' ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500';
                 const actionStr = rec.status === 'RUNNING' ? 'Mula' : 'Tamat';
                 timelineHtml += `
                     <div class="relative pl-5">
