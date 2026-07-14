@@ -142,7 +142,7 @@
                     <p id="stat-slowest" class="text-2xl font-black text-slate-800">0m 0s</p>
                 </div>
                 <div class="eoc-card p-4 border-l-4 border-indigo-500">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Avg User Total Score</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Avg System Total Score</span>
                     <p id="stat-avg-score" class="text-2xl font-black text-slate-800">0</p>
                 </div>
             </div>
@@ -203,7 +203,7 @@
                     <!-- Chart 2: Agency Submission -->
                     <div id="card-chart2" class="eoc-card flex flex-col p-4 shadow-sm">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Agency Submission (Serahan Agensi)</h3>
+                            <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Evaluator Submission (Serahan Penilai)</h3>
                             <div class="flex space-x-1">
                                 <button onclick="toggleCollapse('content-chart2')" class="text-slate-400 hover:text-blue-500 text-xs px-1 border rounded">_</button>
                                 <button onclick="toggleMaximize('card-chart2')" class="text-slate-400 hover:text-blue-500 text-xs px-1 border rounded">🗖</button>
@@ -586,7 +586,7 @@
                     document.getElementById('nav-dashboard').classList.remove('hidden');
                     document.getElementById('btn-delete-all').classList.remove('hidden');
                     switchView('dashboard');
-                    showToast('Selamat Datang, Komander EOC.', 'success');
+                    showToast('Selamat Datang, Komander NEBBY.', 'success');
                 } else {
                     document.getElementById('nav-dashboard').classList.add('hidden');
                     document.getElementById('btn-delete-all').classList.add('hidden');
