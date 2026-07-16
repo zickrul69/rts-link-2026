@@ -164,8 +164,8 @@
                     ⛶ Full Screen Mode
                 </button>
                 <button onclick="switchView('dashboard')" id="nav-dashboard" class="px-4 py-1.5 rounded text-xs font-bold transition bg-blue-600 text-white hidden whitespace-nowrap shadow-md">DASHBOARD</button>
-                <button onclick="switchView('form')" id="nav-form" class="px-4 py-1.5 rounded text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white hidden whitespace-nowrap">BORANG PENILAIAN</button>
-                <button onclick="switchView('reports')" id="nav-reports" class="px-4 py-1.5 rounded text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white hidden whitespace-nowrap">SENARAI LOG</button>
+                <button onclick="switchView('form')" id="nav-form" class="px-4 py-1.5 rounded text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white hidden whitespace-nowrap">EVALUATION FORM</button>
+                <button onclick="switchView('reports')" id="nav-reports" class="px-4 py-1.5 rounded text-xs font-bold transition text-slate-300 hover:bg-slate-700 hover:text-white hidden whitespace-nowrap">SUBMISSION LOG</button>
                 <button onclick="logoutSession()" class="px-4 py-1.5 rounded text-xs font-bold transition bg-red-500/20 text-red-300 hover:bg-red-600 hover:text-white ml-2 border border-red-500/30 whitespace-nowrap">KELUAR</button>
             </div>
         </div>
@@ -237,7 +237,7 @@
                         <!-- INJECT STATUS OVERVIEW -->
                         <div id="card-inject-overview" class="eoc-card w-full md:w-1/3 2xl:w-1/4 flex flex-col group shrink-0 min-h-[250px] xl:min-h-0">
                             <div class="card-header rounded-t-lg cursor-default">
-                                <h3 class="text-xs font-bold uppercase tracking-widest">MATRIKS SUNTIKAN</h3>
+                                <h3 class="text-xs font-bold uppercase tracking-widest">INJECT MATRIX</h3>
                                 <div class="flex items-center gap-1">
                                     <button onclick="DashboardUI.toggleCollapse('card-inject-overview')" class="text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-700 transition">_</button>
                                     <button onclick="DashboardUI.toggleMaximize('card-inject-overview')" class="text-slate-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-slate-700 transition font-mono">🗖</button>
@@ -253,7 +253,7 @@
                     <div class="h-auto xl:h-56 grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-4 shrink-0">
                         <div id="card-chart1" class="eoc-card flex flex-col group min-h-[180px] xl:min-h-0">
                             <div class="card-header bg-slate-100 rounded-t-lg cursor-default !text-slate-700 !border-b !border-slate-200" style="background: #f8fafc;">
-                                <h3 class="text-[9px] font-bold uppercase">Indikator Fasa</h3>
+                                <h3 class="text-[9px] font-bold uppercase">PHASE INDICATOR</h3>
                                 <div class="flex items-center gap-1">
                                     <button onclick="DashboardUI.toggleCollapse('card-chart1')" class="text-slate-400 hover:text-blue-600 px-1.5">_</button>
                                     <button onclick="DashboardUI.toggleMaximize('card-chart1')" class="text-slate-400 hover:text-blue-600 px-1.5 font-mono">🗖</button>
@@ -264,7 +264,7 @@
                         
                         <div id="card-chart2" class="eoc-card flex flex-col group min-h-[180px] xl:min-h-0">
                             <div class="card-header bg-slate-100 rounded-t-lg cursor-default !text-slate-700 !border-b !border-slate-200" style="background: #f8fafc;">
-                                <h3 class="text-[9px] font-bold uppercase">Hantaran Penilai</h3>
+                                <h3 class="text-[9px] font-bold uppercase">EVALUATOR SUBMISSION</h3>
                                 <div class="flex items-center gap-1">
                                     <button onclick="DashboardUI.toggleCollapse('card-chart2')" class="text-slate-400 hover:text-blue-600 px-1.5">_</button>
                                     <button onclick="DashboardUI.toggleMaximize('card-chart2')" class="text-slate-400 hover:text-blue-600 px-1.5 font-mono">🗖</button>
@@ -275,7 +275,7 @@
 
                         <div id="card-chart3" class="eoc-card flex flex-col group min-h-[180px] xl:min-h-0">
                             <div class="card-header bg-slate-100 rounded-t-lg cursor-default !text-slate-700 !border-b !border-slate-200" style="background: #f8fafc;">
-                                <h3 class="text-[9px] font-bold uppercase">Status Suntikan Aktif</h3>
+                                <h3 class="text-[9px] font-bold uppercase">ACTIVE INJECTION</h3>
                                 <div class="flex items-center gap-1">
                                     <button onclick="DashboardUI.toggleCollapse('card-chart3')" class="text-slate-400 hover:text-blue-600 px-1.5">_</button>
                                     <button onclick="DashboardUI.toggleMaximize('card-chart3')" class="text-slate-400 hover:text-blue-600 px-1.5 font-mono">🗖</button>
